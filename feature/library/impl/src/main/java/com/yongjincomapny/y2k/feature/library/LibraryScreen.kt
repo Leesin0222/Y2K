@@ -27,7 +27,7 @@ import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
+import com.yongjincomapny.y2k.designsystem.theme.Y2KTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -102,9 +102,9 @@ fun LibraryScreen(
                 modifier = Modifier.padding(start = 16.dp, top = 12.dp, bottom = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("✦", color = MaterialTheme.colorScheme.primary, fontSize = 20.sp)
+                Text("✦", color = Y2KTheme.colors.accent, fontSize = 20.sp)
                 Spacer(Modifier.width(8.dp))
-                Text("Library", style = MaterialTheme.typography.displayMedium)
+                Text("Library", style = Y2KTheme.textStyles.displayMedium)
             }
         }
 
@@ -133,15 +133,15 @@ fun LibraryScreen(
                     ).forEach { (num, label) ->
                         Column(
                             modifier = Modifier.weight(1f).clip(RoundedCornerShape(8.dp))
-                                .background(MaterialTheme.colorScheme.surface)
-                                .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(8.dp))
+                                .background(Y2KTheme.colors.surface)
+                                .border(1.5.dp, Y2KTheme.colors.border, RoundedCornerShape(8.dp))
                                 .padding(12.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
-                            Text(num, style = MaterialTheme.typography.displaySmall)
+                            Text(num, style = Y2KTheme.textStyles.displaySmall)
                             Text(
                                 label.uppercase(), fontFamily = MonoFontFamily, fontSize = 10.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant, letterSpacing = 0.06.sp,
+                                color = Y2KTheme.colors.fgMuted, letterSpacing = 0.06.sp,
                             )
                         }
                     }
@@ -262,21 +262,21 @@ private fun QuickActionItem(
         ) {
             Box(
                 modifier = Modifier.size(44.dp).clip(RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.surface)
-                    .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(8.dp)),
+                    .background(Y2KTheme.colors.surface)
+                    .border(1.5.dp, Y2KTheme.colors.border, RoundedCornerShape(8.dp)),
                 contentAlignment = Alignment.Center,
             ) { Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp)) }
             Column(modifier = Modifier.weight(1f)) {
-                Text(name, style = MaterialTheme.typography.titleMedium)
-                Text(count, fontFamily = MonoFontFamily, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(name, style = Y2KTheme.textStyles.titleMedium)
+                Text(count, fontFamily = MonoFontFamily, fontSize = 12.sp, color = Y2KTheme.colors.fgMuted)
             }
             Icon(
                 Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null,
-                modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(18.dp), tint = Y2KTheme.colors.fgMuted,
             )
         }
         if (showDivider) {
-            HorizontalDivider(color = MaterialTheme.colorScheme.outline, thickness = 1.dp)
+            HorizontalDivider(color = Y2KTheme.colors.border, thickness = 1.dp)
         }
     }
 }
@@ -293,8 +293,8 @@ private fun PlaylistCard(
         modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
-            .background(MaterialTheme.colorScheme.surface)
-            .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(8.dp))
+            .background(Y2KTheme.colors.surface)
+            .border(1.5.dp, Y2KTheme.colors.border, RoundedCornerShape(8.dp))
             .clickable(onClick = onClick)
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -328,16 +328,16 @@ private fun PlaylistCard(
             }
         }
         Column(modifier = Modifier.weight(1f)) {
-            Text(name, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(name, style = Y2KTheme.textStyles.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Text(
                 "$trackCount tracks · $duration",
                 fontFamily = MonoFontFamily, fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = Y2KTheme.colors.fgMuted,
             )
         }
         Icon(
             Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null,
-            modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(18.dp), tint = Y2KTheme.colors.fgMuted,
         )
     }
 }
@@ -358,28 +358,28 @@ private fun ArtistRow(
             val colors = gradientColors[colorIndex % gradientColors.size]
             Box(
                 modifier = Modifier.size(48.dp).clip(CircleShape)
-                    .border(1.5.dp, MaterialTheme.colorScheme.outline, CircleShape)
+                    .border(1.5.dp, Y2KTheme.colors.border, CircleShape)
                     .background(Brush.linearGradient(listOf(colors.first, colors.second))),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(artist.initials, fontSize = 18.sp, fontWeight = FontWeight.Medium)
             }
             Column(modifier = Modifier.weight(1f)) {
-                Text(artist.name, style = MaterialTheme.typography.titleMedium)
+                Text(artist.name, style = Y2KTheme.textStyles.titleMedium)
                 val albumLabel = if (artist.albumCount == 1) "1 album" else "${artist.albumCount} albums"
                 Text(
                     "$albumLabel · ${artist.trackCount} tracks",
                     fontFamily = MonoFontFamily, fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = Y2KTheme.colors.fgMuted,
                 )
             }
             Icon(
                 Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null,
-                modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(18.dp), tint = Y2KTheme.colors.fgMuted,
             )
         }
         if (showDivider) {
-            HorizontalDivider(color = MaterialTheme.colorScheme.outline, thickness = 1.dp)
+            HorizontalDivider(color = Y2KTheme.colors.border, thickness = 1.dp)
         }
     }
 }
@@ -405,13 +405,13 @@ private fun RecentTrackRow(
                 fallbackGradient = colors,
             )
             Column(modifier = Modifier.weight(1f)) {
-                Text(track.title, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text("${track.artist} · ${track.album}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(track.title, style = Y2KTheme.textStyles.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text("${track.artist} · ${track.album}", fontSize = 12.sp, color = Y2KTheme.colors.fgMuted)
             }
-            Text(dateLabel, fontFamily = MonoFontFamily, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(dateLabel, fontFamily = MonoFontFamily, fontSize = 11.sp, color = Y2KTheme.colors.fgMuted)
         }
         if (showDivider) {
-            HorizontalDivider(color = MaterialTheme.colorScheme.outline, thickness = 1.dp)
+            HorizontalDivider(color = Y2KTheme.colors.border, thickness = 1.dp)
         }
     }
 }
@@ -434,7 +434,7 @@ private fun LibraryAlbumGrid(albums: List<Y2KAlbum>, onAlbumClick: (album: Strin
                         }
                         Spacer(Modifier.height(8.dp))
                         Text(album.name, fontSize = 13.sp, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        Text(album.artist, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(album.artist, fontSize = 11.sp, color = Y2KTheme.colors.fgMuted)
                     }
                 }
                 if (row.size == 1) {

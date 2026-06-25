@@ -30,7 +30,7 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
+import com.yongjincomapny.y2k.designsystem.theme.Y2KTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -98,9 +98,9 @@ fun ProfileScreen(
             modifier = Modifier.padding(start = 16.dp, top = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text("✦", color = MaterialTheme.colorScheme.primary, fontSize = 20.sp)
+            Text("✦", color = Y2KTheme.colors.accent, fontSize = 20.sp)
             Spacer(Modifier.width(8.dp))
-            Text("Profile", style = MaterialTheme.typography.displayMedium)
+            Text("Profile", style = Y2KTheme.textStyles.displayMedium)
         }
 
         // Profile card
@@ -111,26 +111,26 @@ fun ProfileScreen(
             Box {
                 Box(
                     modifier = Modifier.size(72.dp).offset(x = 4.dp, y = 4.dp)
-                        .clip(CircleShape).background(MaterialTheme.colorScheme.onSurface),
+                        .clip(CircleShape).background(Y2KTheme.colors.fg),
                 )
                 Box(
                     modifier = Modifier.size(72.dp).clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.onSurface)
-                        .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape),
+                        .background(Y2KTheme.colors.fg)
+                        .border(2.dp, Y2KTheme.colors.accent, CircleShape),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(profile.initials, style = MaterialTheme.typography.displaySmall,
-                        color = MaterialTheme.colorScheme.background)
+                    Text(profile.initials, style = Y2KTheme.textStyles.displaySmall,
+                        color = Y2KTheme.colors.bg)
                 }
             }
             Column(modifier = Modifier.weight(1f)) {
-                Text(profile.name, style = MaterialTheme.typography.displaySmall)
-                Text(profile.handle, fontFamily = MonoFontFamily, fontSize = 13.sp, color = MaterialTheme.colorScheme.primary)
-                Text("Since ${profile.year}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(profile.name, style = Y2KTheme.textStyles.displaySmall)
+                Text(profile.handle, fontFamily = MonoFontFamily, fontSize = 13.sp, color = Y2KTheme.colors.accent)
+                Text("Since ${profile.year}", fontSize = 12.sp, color = Y2KTheme.colors.fgMuted)
             }
             Box(
                 modifier = Modifier.clip(CircleShape)
-                    .border(1.5.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
+                    .border(1.5.dp, Y2KTheme.colors.fg, CircleShape)
                     .clickable { }
                     .padding(horizontal = 14.dp, vertical = 6.dp),
             ) { Text("Edit", fontSize = 12.sp, fontWeight = FontWeight.Medium) }
@@ -139,17 +139,17 @@ fun ProfileScreen(
         // Subscription badge
         Box(
             modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.onSurface).padding(16.dp),
+                .clip(RoundedCornerShape(16.dp)).background(Y2KTheme.colors.fg).padding(16.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text("✦", fontSize = 28.sp, color = MaterialTheme.colorScheme.primary)
+                Text("✦", fontSize = 28.sp, color = Y2KTheme.colors.accent)
                 Column {
-                    Text("Y2K Premium", style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.background)
-                    Text("HI-RES 무제한 · 오프라인 재생", fontSize = 12.sp, color = MaterialTheme.colorScheme.background.copy(alpha = 0.7f))
+                    Text("Y2K Premium", style = Y2KTheme.textStyles.headlineSmall, color = Y2KTheme.colors.bg)
+                    Text("HI-RES 무제한 · 오프라인 재생", fontSize = 12.sp, color = Y2KTheme.colors.bg.copy(alpha = 0.7f))
                 }
             }
             Text("✦ ✦ ✦", modifier = Modifier.align(Alignment.TopEnd), fontSize = 20.sp,
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+                color = Y2KTheme.colors.accent.copy(alpha = 0.1f))
         }
 
         Spacer(Modifier.height(24.dp))
@@ -159,14 +159,14 @@ fun ProfileScreen(
             listOf("${tracks.size}" to "트랙", "${totalHours}h" to "청취 시간", "$artistCount" to "아티스트").forEach { (num, label) ->
                 Column(
                     modifier = Modifier.weight(1f).clip(RoundedCornerShape(8.dp))
-                        .background(MaterialTheme.colorScheme.surface)
-                        .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(8.dp))
+                        .background(Y2KTheme.colors.surface)
+                        .border(1.5.dp, Y2KTheme.colors.border, RoundedCornerShape(8.dp))
                         .padding(12.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Text(num, style = MaterialTheme.typography.displaySmall, fontSize = 18.sp)
+                    Text(num, style = Y2KTheme.textStyles.displaySmall, fontSize = 18.sp)
                     Text(label, fontFamily = MonoFontFamily, fontSize = 9.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant, letterSpacing = 0.06.sp)
+                        color = Y2KTheme.colors.fgMuted, letterSpacing = 0.06.sp)
                 }
             }
         }
@@ -186,13 +186,13 @@ fun ProfileScreen(
                     Column(modifier = Modifier.width(80.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                         Box(
                             modifier = Modifier.size(64.dp).clip(CircleShape)
-                                .border(2.dp, MaterialTheme.colorScheme.outline, CircleShape)
+                                .border(2.dp, Y2KTheme.colors.border, CircleShape)
                                 .background(Brush.linearGradient(listOf(colors.first, colors.second))),
                             contentAlignment = Alignment.Center,
                         ) { Text("♫", fontSize = 24.sp) }
                         Spacer(Modifier.height(8.dp))
                         Text(name, fontSize = 11.sp, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        Text("$count tracks", fontFamily = MonoFontFamily, fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("$count tracks", fontFamily = MonoFontFamily, fontSize = 9.sp, color = Y2KTheme.colors.fgMuted)
                     }
                 }
             }
@@ -224,8 +224,8 @@ fun ProfileScreen(
             Column(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp).fillMaxWidth()
                     .clip(RoundedCornerShape(16.dp))
-                    .background(MaterialTheme.colorScheme.surface)
-                    .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(16.dp)),
+                    .background(Y2KTheme.colors.surface)
+                    .border(1.5.dp, Y2KTheme.colors.border, RoundedCornerShape(16.dp)),
             ) {
                 group.forEach { (icon, name, desc) -> SettingsItem(icon, name, desc) }
             }
@@ -242,13 +242,13 @@ private fun SettingsItem(icon: ImageVector, name: String, desc: String) {
     ) {
         Box(
             modifier = Modifier.size(36.dp).clip(RoundedCornerShape(8.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant),
+                .background(Y2KTheme.colors.surfaceRaised),
             contentAlignment = Alignment.Center,
         ) { Icon(icon, contentDescription = null, modifier = Modifier.size(18.dp)) }
         Column(modifier = Modifier.weight(1f)) {
-            Text(name, style = MaterialTheme.typography.titleMedium)
-            Text(desc, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(name, style = Y2KTheme.textStyles.titleMedium)
+            Text(desc, fontSize = 11.sp, color = Y2KTheme.colors.fgMuted)
         }
-        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, modifier = Modifier.size(16.dp), tint = Y2KTheme.colors.fgMuted)
     }
 }

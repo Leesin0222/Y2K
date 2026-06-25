@@ -4,27 +4,26 @@ import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SkipNext
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.yongjincomapny.y2k.designsystem.theme.Y2KTheme
 
 @Composable
 fun MiniPlayer(
@@ -38,18 +37,24 @@ fun MiniPlayer(
     modifier: Modifier = Modifier,
     artworkUri: Uri? = null,
 ) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 0.dp,
+    val colors = Y2KTheme.colors
+    val textStyles = Y2KTheme.textStyles
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(colors.surface),
     ) {
         Column {
-            LinearProgressIndicator(
-                progress = { progress },
-                modifier = Modifier.fillMaxWidth().height(2.dp),
-                color = MaterialTheme.colorScheme.primary,
-                trackColor = MaterialTheme.colorScheme.outline,
-            )
+            // Progress bar
+            Box(modifier = Modifier.fillMaxWidth().height(2.dp).background(colors.border)) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(progress.coerceIn(0f, 1f))
+                        .fillMaxHeight()
+                        .background(colors.accent),
+                )
+            }
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -63,17 +68,15 @@ fun MiniPlayer(
                     size = 40.dp,
                 )
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(
+                    BasicText(
                         text = title,
-                        style = MaterialTheme.typography.bodySmall,
-                        fontWeight = FontWeight.Medium,
+                        style = textStyles.bodySmall.copy(fontWeight = FontWeight.Medium),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
-                    Text(
+                    BasicText(
                         text = artist,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = textStyles.labelSmall.copy(color = colors.fgMuted),
                     )
                 }
                 Y2KIconButton(

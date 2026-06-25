@@ -17,7 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
+import com.yongjincomapny.y2k.designsystem.theme.Y2KTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Switch
@@ -56,9 +56,9 @@ fun EqualizerScreen(
             modifier = Modifier.padding(start = 16.dp, top = 12.dp, bottom = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text("✦", color = MaterialTheme.colorScheme.primary, fontSize = 20.sp)
+            Text("✦", color = Y2KTheme.colors.accent, fontSize = 20.sp)
             Spacer(Modifier.width(8.dp))
-            Text("Equalizer", style = MaterialTheme.typography.displayMedium)
+            Text("Equalizer", style = Y2KTheme.textStyles.displayMedium)
         }
 
         // EQ 활성화 토글
@@ -67,11 +67,11 @@ fun EqualizerScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text("Equalizer", style = MaterialTheme.typography.titleMedium)
+            Text("Equalizer", style = Y2KTheme.textStyles.titleMedium)
             Switch(
                 checked = eqState.enabled,
                 onCheckedChange = onEnabledChange,
-                colors = SwitchDefaults.colors(checkedTrackColor = MaterialTheme.colorScheme.primary),
+                colors = SwitchDefaults.colors(checkedTrackColor = Y2KTheme.colors.accent),
             )
         }
 
@@ -79,8 +79,8 @@ fun EqualizerScreen(
         Column(
             modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth()
                 .clip(RoundedCornerShape(16.dp))
-                .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(16.dp))
-                .background(MaterialTheme.colorScheme.surface).padding(20.dp),
+                .border(1.5.dp, Y2KTheme.colors.border, RoundedCornerShape(16.dp))
+                .background(Y2KTheme.colors.surface).padding(20.dp),
         ) {
             SectionHeader("오디오 스펙트럼")
             Spacer(Modifier.height(16.dp))
@@ -98,8 +98,8 @@ fun EqualizerScreen(
                                 modifier = Modifier.width(16.dp).height((100 * normalized.coerceIn(0.05f, 1f)).dp)
                                     .clip(RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp))
                                     .background(
-                                        if (eqState.enabled) MaterialTheme.colorScheme.primary
-                                        else MaterialTheme.colorScheme.outline
+                                        if (eqState.enabled) Y2KTheme.colors.accent
+                                        else Y2KTheme.colors.border
                                     ),
                             )
                         }
@@ -109,11 +109,11 @@ fun EqualizerScreen(
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                     eqState.bands.forEach { band ->
                         val label = if (band.centerFrequency >= 1000) "${band.centerFrequency / 1000}K" else "${band.centerFrequency}"
-                        Text(label, fontFamily = MonoFontFamily, fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(label, fontFamily = MonoFontFamily, fontSize = 9.sp, color = Y2KTheme.colors.fgMuted)
                     }
                 }
             } else {
-                Text("이퀄라이저를 사용할 수 없습니다", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("이퀄라이저를 사용할 수 없습니다", fontSize = 13.sp, color = Y2KTheme.colors.fgMuted)
             }
         }
 
@@ -142,8 +142,8 @@ fun EqualizerScreen(
             Column(
                 modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth()
                     .clip(RoundedCornerShape(16.dp))
-                    .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(16.dp))
-                    .background(MaterialTheme.colorScheme.surface).padding(20.dp),
+                    .border(1.5.dp, Y2KTheme.colors.border, RoundedCornerShape(16.dp))
+                    .background(Y2KTheme.colors.surface).padding(20.dp),
             ) {
                 SectionHeader("수동 조절")
                 Spacer(Modifier.height(16.dp))
@@ -154,7 +154,7 @@ fun EqualizerScreen(
                     val db = band.level / 100
 
                     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                        Text(label, fontFamily = MonoFontFamily, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.width(40.dp))
+                        Text(label, fontFamily = MonoFontFamily, fontSize = 12.sp, color = Y2KTheme.colors.fgMuted, modifier = Modifier.width(40.dp))
                         Slider(
                             value = normalized,
                             onValueChange = { value ->
@@ -164,15 +164,15 @@ fun EqualizerScreen(
                             modifier = Modifier.weight(1f),
                             enabled = eqState.enabled,
                             colors = SliderDefaults.colors(
-                                thumbColor = MaterialTheme.colorScheme.primary,
-                                activeTrackColor = MaterialTheme.colorScheme.primary,
-                                inactiveTrackColor = MaterialTheme.colorScheme.outline,
+                                thumbColor = Y2KTheme.colors.accent,
+                                activeTrackColor = Y2KTheme.colors.accent,
+                                inactiveTrackColor = Y2KTheme.colors.border,
                             ),
                         )
                         Text(
                             "${if (db >= 0) "+" else ""}${db}dB",
                             fontFamily = MonoFontFamily, fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.primary, modifier = Modifier.width(44.dp),
+                            color = Y2KTheme.colors.accent, modifier = Modifier.width(44.dp),
                         )
                     }
                 }
@@ -197,9 +197,9 @@ fun EqualizerScreen(
                     onValueChange = { onBassBoostStrengthChange((it * 1000).toInt()) },
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
                     colors = SliderDefaults.colors(
-                        thumbColor = MaterialTheme.colorScheme.primary,
-                        activeTrackColor = MaterialTheme.colorScheme.primary,
-                        inactiveTrackColor = MaterialTheme.colorScheme.outline,
+                        thumbColor = Y2KTheme.colors.accent,
+                        activeTrackColor = Y2KTheme.colors.accent,
+                        inactiveTrackColor = Y2KTheme.colors.border,
                     ),
                 )
             }
@@ -237,13 +237,13 @@ private fun AudioSettingItem(
         horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(name, style = MaterialTheme.typography.titleMedium)
-            Text(desc, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(name, style = Y2KTheme.textStyles.titleMedium)
+            Text(desc, fontSize = 11.sp, color = Y2KTheme.colors.fgMuted)
         }
         Switch(
             checked = checked,
             onCheckedChange = onCheckedChange,
-            colors = SwitchDefaults.colors(checkedTrackColor = MaterialTheme.colorScheme.primary),
+            colors = SwitchDefaults.colors(checkedTrackColor = Y2KTheme.colors.accent),
         )
     }
 }

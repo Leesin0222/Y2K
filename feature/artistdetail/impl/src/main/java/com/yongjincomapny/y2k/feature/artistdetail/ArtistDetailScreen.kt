@@ -31,7 +31,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
+import com.yongjincomapny.y2k.designsystem.theme.Y2KTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -91,14 +91,14 @@ fun ArtistDetailScreen(
     val colorIndex = allTracks.map { it.artist }.distinct().indexOf(artistName).coerceAtLeast(0)
     val heroColors = gradientColors[colorIndex % gradientColors.size]
 
-    Column(modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+    Column(modifier = modifier.fillMaxSize().background(Y2KTheme.colors.bg)) {
         TopAppBar(
             title = {
                 Text(
                     "ARTIST",
                     fontFamily = MonoFontFamily,
                     fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = Y2KTheme.colors.fgMuted,
                     letterSpacing = 0.06.sp,
                 )
             },
@@ -107,7 +107,7 @@ fun ArtistDetailScreen(
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                 }
             },
-            colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = Y2KTheme.colors.bg),
             windowInsets = WindowInsets(0),
         )
 
@@ -127,31 +127,31 @@ fun ArtistDetailScreen(
                             modifier = Modifier.size(120.dp)
                                 .offset(x = 4.dp, y = 4.dp)
                                 .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.onSurface),
+                                .background(Y2KTheme.colors.fg),
                         )
                         Box(
                             modifier = Modifier.size(120.dp)
                                 .clip(CircleShape)
-                                .border(2.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
+                                .border(2.dp, Y2KTheme.colors.fg, CircleShape)
                                 .background(Brush.linearGradient(listOf(heroColors.first, heroColors.second))),
                             contentAlignment = Alignment.Center,
                         ) {
                             Text(
                                 initials,
-                                style = MaterialTheme.typography.displaySmall,
+                                style = Y2KTheme.textStyles.displaySmall,
                                 fontSize = 36.sp,
                                 fontWeight = FontWeight.ExtraBold,
                             )
                         }
                     }
                     Spacer(Modifier.height(16.dp))
-                    Text(artistName, style = MaterialTheme.typography.displaySmall)
+                    Text(artistName, style = Y2KTheme.textStyles.displaySmall)
                     Spacer(Modifier.height(4.dp))
                     Text(
                         "${albums.size} albums · ${artistTracks.size} tracks",
                         fontFamily = MonoFontFamily,
                         fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = Y2KTheme.colors.fgMuted,
                     )
                     Spacer(Modifier.height(20.dp))
                     Row(
@@ -199,7 +199,7 @@ fun ArtistDetailScreen(
                                 "${i + 1}",
                                 fontFamily = MonoFontFamily,
                                 fontSize = 13.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                color = Y2KTheme.colors.fgMuted,
                                 modifier = Modifier.width(20.dp),
                             )
                             AlbumArt(
@@ -210,25 +210,25 @@ fun ArtistDetailScreen(
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
                                     track.title,
-                                    style = MaterialTheme.typography.titleMedium,
+                                    style = Y2KTheme.textStyles.titleMedium,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
                                 )
                                 Text(
                                     track.album,
                                     fontSize = 11.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    color = Y2KTheme.colors.fgMuted,
                                 )
                             }
                             Text(
                                 formatDuration(track.duration),
                                 fontFamily = MonoFontFamily,
                                 fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                color = Y2KTheme.colors.fgMuted,
                             )
                         }
                         if (i < topTracks.size - 1) {
-                            HorizontalDivider(color = MaterialTheme.colorScheme.outline, thickness = 1.dp)
+                            HorizontalDivider(color = Y2KTheme.colors.border, thickness = 1.dp)
                         }
                     }
                 }
@@ -274,7 +274,7 @@ fun ArtistDetailScreen(
                                             "${albumTracks.size} tracks",
                                             fontFamily = MonoFontFamily,
                                             fontSize = 11.sp,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            color = Y2KTheme.colors.fgMuted,
                                         )
                                     }
                                 }
@@ -314,7 +314,7 @@ fun ArtistDetailScreen(
                                 Box(
                                     modifier = Modifier.size(64.dp)
                                         .clip(CircleShape)
-                                        .border(1.5.dp, MaterialTheme.colorScheme.outline, CircleShape)
+                                        .border(1.5.dp, Y2KTheme.colors.border, CircleShape)
                                         .background(Brush.linearGradient(listOf(colors.first, colors.second))),
                                     contentAlignment = Alignment.Center,
                                 ) {

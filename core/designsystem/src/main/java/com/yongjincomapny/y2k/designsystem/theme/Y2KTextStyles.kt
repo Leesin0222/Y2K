@@ -1,63 +1,29 @@
-@file:OptIn(ExperimentalTextApi::class)
-
 package com.yongjincomapny.y2k.designsystem.theme
 
-import androidx.compose.material3.Typography
-import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import com.yongjincomapny.y2k.designsystem.R
 
-val DisplayFontFamily = FontFamily(
-    Font(
-        R.font.syne,
-        weight = FontWeight.Bold,
-        variationSettings = FontVariation.Settings(FontVariation.weight(700)),
-    ),
-    Font(
-        R.font.syne,
-        weight = FontWeight.ExtraBold,
-        variationSettings = FontVariation.Settings(FontVariation.weight(800)),
-    ),
+@Immutable
+data class Y2KTextStyles(
+    val displayLarge: TextStyle,
+    val displayMedium: TextStyle,
+    val displaySmall: TextStyle,
+    val headlineMedium: TextStyle,
+    val headlineSmall: TextStyle,
+    val titleLarge: TextStyle,
+    val titleMedium: TextStyle,
+    val bodyLarge: TextStyle,
+    val bodyMedium: TextStyle,
+    val bodySmall: TextStyle,
+    val labelLarge: TextStyle,
+    val labelMedium: TextStyle,
+    val labelSmall: TextStyle,
 )
 
-val BodyFontFamily = FontFamily(
-    Font(
-        R.font.space_grotesk,
-        weight = FontWeight.Normal,
-        variationSettings = FontVariation.Settings(FontVariation.weight(400)),
-    ),
-    Font(
-        R.font.space_grotesk,
-        weight = FontWeight.Medium,
-        variationSettings = FontVariation.Settings(FontVariation.weight(500)),
-    ),
-    Font(
-        R.font.space_grotesk,
-        weight = FontWeight.Bold,
-        variationSettings = FontVariation.Settings(FontVariation.weight(700)),
-    ),
-)
-
-val MonoFontFamily = FontFamily(
-    Font(
-        R.font.jetbrains_mono,
-        weight = FontWeight.Normal,
-        variationSettings = FontVariation.Settings(FontVariation.weight(400)),
-    ),
-    Font(
-        R.font.jetbrains_mono,
-        weight = FontWeight.Medium,
-        variationSettings = FontVariation.Settings(FontVariation.weight(500)),
-    ),
-)
-
-// Material3 Typography — feature 모듈 호환용 (점진적 제거 예정)
-val Y2KMaterialTypography = Typography(
+val Y2KDefaultTextStyles = Y2KTextStyles(
     displayLarge = TextStyle(
         fontFamily = DisplayFontFamily,
         fontWeight = FontWeight.ExtraBold,
@@ -141,3 +107,5 @@ val Y2KMaterialTypography = Typography(
         letterSpacing = 0.04.sp,
     ),
 )
+
+val LocalY2KTextStyles = staticCompositionLocalOf { Y2KDefaultTextStyles }

@@ -33,7 +33,7 @@ import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
+import com.yongjincomapny.y2k.designsystem.theme.Y2KTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
@@ -93,11 +93,11 @@ fun NowPlayingScreen(
     var seekValue by remember { mutableFloatStateOf(0f) }
 
     Column(
-        modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
+        modifier = modifier.fillMaxSize().background(Y2KTheme.colors.bg),
     ) {
         TopAppBar(
             title = {
-                Text("NOW PLAYING", style = MaterialTheme.typography.titleLarge,
+                Text("NOW PLAYING", style = Y2KTheme.textStyles.titleLarge,
                     modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
             },
             navigationIcon = {
@@ -106,7 +106,7 @@ fun NowPlayingScreen(
             actions = {
                 IconButton(onClick = { }) { Icon(Icons.Default.MoreVert, contentDescription = "Menu") }
             },
-            colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = Y2KTheme.colors.bg),
             windowInsets = WindowInsets(0),
         )
 
@@ -122,11 +122,11 @@ fun NowPlayingScreen(
                         .size(280.dp)
                         .offset(x = 4.dp, y = 4.dp)
                         .clip(RoundedCornerShape(16.dp))
-                        .background(MaterialTheme.colorScheme.onSurface),
+                        .background(Y2KTheme.colors.fg),
                 )
                 Box(
                     modifier = Modifier
-                        .border(2.dp, MaterialTheme.colorScheme.onSurface, RoundedCornerShape(16.dp)),
+                        .border(2.dp, Y2KTheme.colors.fg, RoundedCornerShape(16.dp)),
                 ) {
                     AlbumArt(
                         artworkUri = track?.artworkUri,
@@ -139,27 +139,27 @@ fun NowPlayingScreen(
             Spacer(Modifier.height(32.dp))
             MarqueeText(
                 text = title,
-                style = MaterialTheme.typography.displayMedium,
+                style = Y2KTheme.textStyles.displayMedium,
                 textAlign = TextAlign.Center,
             )
             Spacer(Modifier.height(4.dp))
             MarqueeText(
                 text = artist,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = Y2KTheme.textStyles.bodyLarge,
+                color = Y2KTheme.colors.fgMuted,
             )
             if (album.isNotEmpty()) {
-                Text(album, fontFamily = MonoFontFamily, fontSize = 12.sp, color = MaterialTheme.colorScheme.primary, maxLines = 1)
+                Text(album, fontFamily = MonoFontFamily, fontSize = 12.sp, color = Y2KTheme.colors.accent, maxLines = 1)
             }
             Spacer(Modifier.height(8.dp))
             if (isHiRes) {
                 Box(
                     modifier = Modifier.clip(RoundedCornerShape(4.dp))
-                        .border(1.5.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(4.dp))
+                        .border(1.5.dp, Y2KTheme.colors.accent, RoundedCornerShape(4.dp))
                         .padding(horizontal = 8.dp, vertical = 3.dp),
                 ) {
                     Text("HI-RES", fontFamily = MonoFontFamily, fontSize = 10.sp, fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.primary, letterSpacing = 0.04.sp)
+                        color = Y2KTheme.colors.accent, letterSpacing = 0.04.sp)
                 }
             }
 
@@ -179,14 +179,14 @@ fun NowPlayingScreen(
                 },
                 modifier = Modifier.fillMaxWidth(),
                 colors = SliderDefaults.colors(
-                    thumbColor = MaterialTheme.colorScheme.primary,
-                    activeTrackColor = MaterialTheme.colorScheme.primary,
-                    inactiveTrackColor = MaterialTheme.colorScheme.outline,
+                    thumbColor = Y2KTheme.colors.accent,
+                    activeTrackColor = Y2KTheme.colors.accent,
+                    inactiveTrackColor = Y2KTheme.colors.border,
                 ),
             )
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(formatTime(playbackState.position), fontFamily = MonoFontFamily, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text("-${formatTime(playbackState.duration - playbackState.position)}", fontFamily = MonoFontFamily, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(formatTime(playbackState.position), fontFamily = MonoFontFamily, fontSize = 11.sp, color = Y2KTheme.colors.fgMuted)
+                Text("-${formatTime(playbackState.duration - playbackState.position)}", fontFamily = MonoFontFamily, fontSize = 11.sp, color = Y2KTheme.colors.fgMuted)
             }
 
             Spacer(Modifier.height(20.dp))
@@ -222,7 +222,7 @@ fun NowPlayingScreen(
                 IconButton(onClick = { }) {
                     Icon(
                         Icons.Default.FavoriteBorder, contentDescription = "Like",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        tint = Y2KTheme.colors.fgMuted,
                         modifier = Modifier.size(22.dp),
                     )
                 }
@@ -230,7 +230,7 @@ fun NowPlayingScreen(
                 IconButton(onClick = onToggleShuffle) {
                     Icon(
                         Icons.Default.Shuffle, contentDescription = "Shuffle",
-                        tint = if (playbackState.shuffleEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        tint = if (playbackState.shuffleEnabled) Y2KTheme.colors.accent else Y2KTheme.colors.fgMuted,
                         modifier = Modifier.size(22.dp),
                     )
                 }
@@ -242,7 +242,7 @@ fun NowPlayingScreen(
                             else -> Icons.Default.Repeat
                         },
                         contentDescription = "Repeat",
-                        tint = if (playbackState.repeatMode != RepeatMode.OFF) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        tint = if (playbackState.repeatMode != RepeatMode.OFF) Y2KTheme.colors.accent else Y2KTheme.colors.fgMuted,
                         modifier = Modifier.size(22.dp),
                     )
                 }

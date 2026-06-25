@@ -1,5 +1,6 @@
 package com.yongjincomapny.y2k.designsystem.component
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -12,10 +13,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -23,11 +21,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.yongjincomapny.y2k.designsystem.theme.BodyFontFamily
+import com.yongjincomapny.y2k.designsystem.theme.Y2KTheme
 
 /**
  * Y2K 하드섀도우 스타일 버튼 — 네오브루탈리즘 (4dp offset shadow)
@@ -41,6 +44,7 @@ fun Y2KButton(
     enabled: Boolean = true,
     style: Y2KButtonStyle = Y2KButtonStyle.Primary,
 ) {
+    val colors = Y2KTheme.colors
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val shadowOffset = if (isPressed) 0.dp else 4.dp
@@ -48,21 +52,21 @@ fun Y2KButton(
 
     val isOutlined = style == Y2KButtonStyle.Outlined
     val bgColor = when (style) {
-        Y2KButtonStyle.Primary -> MaterialTheme.colorScheme.primary
-        Y2KButtonStyle.Secondary -> MaterialTheme.colorScheme.onSurface
-        Y2KButtonStyle.Dark -> MaterialTheme.colorScheme.onSurface
+        Y2KButtonStyle.Primary -> colors.accent
+        Y2KButtonStyle.Secondary -> colors.fg
+        Y2KButtonStyle.Dark -> colors.fg
         Y2KButtonStyle.Outlined -> Color.Transparent
     }
     val fgColor = when (style) {
         Y2KButtonStyle.Primary -> Color.White
-        Y2KButtonStyle.Secondary -> MaterialTheme.colorScheme.background
-        Y2KButtonStyle.Dark -> MaterialTheme.colorScheme.background
-        Y2KButtonStyle.Outlined -> MaterialTheme.colorScheme.onSurface
+        Y2KButtonStyle.Secondary -> colors.bg
+        Y2KButtonStyle.Dark -> colors.bg
+        Y2KButtonStyle.Outlined -> colors.fg
     }
     val shadowColor = when (style) {
-        Y2KButtonStyle.Primary -> MaterialTheme.colorScheme.primary
-        Y2KButtonStyle.Secondary -> MaterialTheme.colorScheme.onSurface
-        Y2KButtonStyle.Dark -> MaterialTheme.colorScheme.onSurface
+        Y2KButtonStyle.Primary -> colors.accent
+        Y2KButtonStyle.Secondary -> colors.fg
+        Y2KButtonStyle.Dark -> colors.fg
         Y2KButtonStyle.Outlined -> Color.Transparent
     }
 
@@ -83,7 +87,7 @@ fun Y2KButton(
                 .offset(x = 0.dp, y = if (isOutlined) 0.dp else topOffset)
                 .clip(CircleShape)
                 .then(
-                    if (isOutlined) Modifier.border(1.5.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
+                    if (isOutlined) Modifier.border(1.5.dp, colors.fg, CircleShape)
                     else Modifier
                 )
                 .background(bgColor)
@@ -98,18 +102,22 @@ fun Y2KButton(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (icon != null) {
-                Icon(
-                    icon, contentDescription = null,
+                Image(
+                    painter = rememberVectorPainter(icon),
+                    contentDescription = null,
                     modifier = Modifier.size(16.dp),
-                    tint = fgColor,
+                    colorFilter = ColorFilter.tint(fgColor),
                 )
                 Box(Modifier.size(6.dp))
             }
-            Text(
+            BasicText(
                 text = text,
-                color = fgColor,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Medium,
+                style = TextStyle(
+                    color = fgColor,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium,
+                    fontFamily = BodyFontFamily,
+                ),
             )
         }
     }
@@ -129,27 +137,28 @@ fun Y2KIconButton(
     style: Y2KButtonStyle = Y2KButtonStyle.Secondary,
     tint: Color? = null,
 ) {
+    val colors = Y2KTheme.colors
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val shadowDp = if (isPressed) 0.dp else 3.dp
     val topOffset = if (isPressed) 3.dp else 0.dp
 
     val bgColor = when (style) {
-        Y2KButtonStyle.Primary -> MaterialTheme.colorScheme.primary
-        Y2KButtonStyle.Secondary -> MaterialTheme.colorScheme.onSurface
-        Y2KButtonStyle.Dark -> MaterialTheme.colorScheme.onSurface
+        Y2KButtonStyle.Primary -> colors.accent
+        Y2KButtonStyle.Secondary -> colors.fg
+        Y2KButtonStyle.Dark -> colors.fg
         Y2KButtonStyle.Outlined -> Color.Transparent
     }
     val fgColor = when (style) {
         Y2KButtonStyle.Primary -> Color.White
-        Y2KButtonStyle.Secondary -> MaterialTheme.colorScheme.background
-        Y2KButtonStyle.Dark -> MaterialTheme.colorScheme.background
-        Y2KButtonStyle.Outlined -> MaterialTheme.colorScheme.onSurface
+        Y2KButtonStyle.Secondary -> colors.bg
+        Y2KButtonStyle.Dark -> colors.bg
+        Y2KButtonStyle.Outlined -> colors.fg
     }
     val shadowColor = when (style) {
-        Y2KButtonStyle.Primary -> MaterialTheme.colorScheme.primary
-        Y2KButtonStyle.Secondary -> MaterialTheme.colorScheme.onSurface
-        Y2KButtonStyle.Dark -> MaterialTheme.colorScheme.onSurface
+        Y2KButtonStyle.Primary -> colors.accent
+        Y2KButtonStyle.Secondary -> colors.fg
+        Y2KButtonStyle.Dark -> colors.fg
         Y2KButtonStyle.Outlined -> Color.Transparent
     }
 
@@ -174,10 +183,11 @@ fun Y2KIconButton(
                 ),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(
-                icon, contentDescription = contentDescription,
+            Image(
+                painter = rememberVectorPainter(icon),
+                contentDescription = contentDescription,
                 modifier = Modifier.size(iconSize),
-                tint = tint ?: fgColor,
+                colorFilter = ColorFilter.tint(tint ?: fgColor),
             )
         }
     }
@@ -193,9 +203,10 @@ fun Y2KChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val bgColor = if (selected) MaterialTheme.colorScheme.onSurface else Color.Transparent
-    val textColor = if (selected) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.onSurface
-    val borderColor = MaterialTheme.colorScheme.onSurface
+    val colors = Y2KTheme.colors
+    val bgColor = if (selected) colors.fg else Color.Transparent
+    val textColor = if (selected) colors.bg else colors.fg
+    val borderColor = colors.fg
 
     Box(
         modifier = modifier
@@ -206,11 +217,14 @@ fun Y2KChip(
             .padding(horizontal = 16.dp, vertical = 8.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Text(
+        BasicText(
             text = text,
-            color = textColor,
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Medium,
+            style = TextStyle(
+                color = textColor,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium,
+                fontFamily = BodyFontFamily,
+            ),
         )
     }
 }

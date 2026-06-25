@@ -25,7 +25,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
+import com.yongjincomapny.y2k.designsystem.theme.Y2KTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -81,9 +81,9 @@ fun SearchScreen(
             modifier = Modifier.padding(start = 16.dp, top = 12.dp, bottom = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text("✦", color = MaterialTheme.colorScheme.primary, fontSize = 20.sp)
+            Text("✦", color = Y2KTheme.colors.accent, fontSize = 20.sp)
             Spacer(Modifier.width(8.dp))
-            Text("Search", style = MaterialTheme.typography.displayMedium)
+            Text("Search", style = Y2KTheme.textStyles.displayMedium)
         }
 
         OutlinedTextField(
@@ -94,8 +94,8 @@ fun SearchScreen(
             trailingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
             shape = CircleShape,
             colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = Y2KTheme.colors.border,
+                focusedBorderColor = Y2KTheme.colors.accent,
             ),
             singleLine = true,
         )
@@ -143,11 +143,11 @@ fun SearchScreen(
                         Text(
                             text = "%02d".format(index + 1),
                             fontFamily = MonoFontFamily, fontSize = 14.sp, fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.width(28.dp),
+                            color = Y2KTheme.colors.fgMuted, modifier = Modifier.width(28.dp),
                         )
                         Box(
                             modifier = Modifier.size(48.dp).clip(RoundedCornerShape(4.dp))
-                                .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
+                                .border(1.5.dp, Y2KTheme.colors.border, RoundedCornerShape(4.dp))
                                 .background(Brush.linearGradient(listOf(
                                     trendingColors[index % trendingColors.size].first,
                                     trendingColors[index % trendingColors.size].second,
@@ -155,15 +155,15 @@ fun SearchScreen(
                             contentAlignment = Alignment.Center,
                         ) { Text("♫", fontSize = 20.sp) }
                         Column(modifier = Modifier.weight(1f)) {
-                            Text(track.title, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                            Text(track.artist, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(track.title, style = Y2KTheme.textStyles.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Text(track.artist, style = Y2KTheme.textStyles.labelSmall, color = Y2KTheme.colors.fgMuted)
                         }
                         if (track.isHiRes) {
-                            Text("HI-RES", fontFamily = MonoFontFamily, fontSize = 9.sp, color = MaterialTheme.colorScheme.primary)
+                            Text("HI-RES", fontFamily = MonoFontFamily, fontSize = 9.sp, color = Y2KTheme.colors.accent)
                         }
-                        Text(formatDuration(track.duration), fontFamily = MonoFontFamily, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(formatDuration(track.duration), fontFamily = MonoFontFamily, fontSize = 11.sp, color = Y2KTheme.colors.fgMuted)
                     }
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outline, thickness = 1.dp)
+                    HorizontalDivider(color = Y2KTheme.colors.border, thickness = 1.dp)
                 }
             }
 
@@ -186,16 +186,16 @@ fun SearchScreen(
                                 for ((name, count) in row) {
                                     Box(
                                         modifier = Modifier.weight(1f).height(88.dp).clip(RoundedCornerShape(8.dp))
-                                            .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(8.dp))
-                                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                                            .border(1.5.dp, Y2KTheme.colors.border, RoundedCornerShape(8.dp))
+                                            .background(Y2KTheme.colors.surfaceRaised)
                                             .clickable { }.padding(12.dp),
                                         contentAlignment = Alignment.BottomStart,
                                     ) {
                                         Text("✦", modifier = Modifier.align(Alignment.TopEnd), fontSize = 18.sp,
-                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.15f))
+                                            color = Y2KTheme.colors.fg.copy(alpha = 0.15f))
                                         Column {
-                                            Text(name, style = MaterialTheme.typography.headlineSmall)
-                                            Text(count, fontFamily = MonoFontFamily, fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                            Text(name, style = Y2KTheme.textStyles.headlineSmall)
+                                            Text(count, fontFamily = MonoFontFamily, fontSize = 10.sp, color = Y2KTheme.colors.fgMuted)
                                         }
                                     }
                                 }

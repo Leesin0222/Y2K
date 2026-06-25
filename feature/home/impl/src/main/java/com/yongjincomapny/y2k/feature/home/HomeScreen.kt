@@ -27,7 +27,7 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
+import com.yongjincomapny.y2k.designsystem.theme.Y2KTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -85,9 +85,9 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 4.dp, top = 12.dp, bottom = 4.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("✦", color = MaterialTheme.colorScheme.primary, fontSize = 20.sp)
+                Text("✦", color = Y2KTheme.colors.accent, fontSize = 20.sp)
                 Spacer(Modifier.width(8.dp))
-                Text("Y2K", style = MaterialTheme.typography.displayMedium)
+                Text("Y2K", style = Y2KTheme.textStyles.displayMedium)
                 Spacer(Modifier.weight(1f))
                 IconButton(onClick = { }) {
                     Icon(Icons.Default.Notifications, contentDescription = "Notifications", modifier = Modifier.size(22.dp))
@@ -131,13 +131,13 @@ private fun FeaturedCard(trackCount: Int, onClick: () -> Unit) {
                 .matchParentSize()
                 .offset(x = 4.dp, y = 4.dp)
                 .clip(RoundedCornerShape(16.dp))
-                .background(MaterialTheme.colorScheme.primary),
+                .background(Y2KTheme.colors.accent),
         )
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(16.dp))
-                .background(MaterialTheme.colorScheme.onSurface)
+                .background(Y2KTheme.colors.fg)
                 .clickable(onClick = onClick)
                 .padding(20.dp),
         ) {
@@ -148,19 +148,19 @@ private fun FeaturedCard(trackCount: Int, onClick: () -> Unit) {
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Medium,
                     letterSpacing = 0.08.sp,
-                    color = MaterialTheme.colorScheme.primary,
+                    color = Y2KTheme.colors.accent,
                 )
                 Spacer(Modifier.height(8.dp))
                 Text(
                     text = "Millennium\nMixtape Vol. 3",
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.background,
+                    style = Y2KTheme.textStyles.headlineMedium,
+                    color = Y2KTheme.colors.bg,
                 )
                 Spacer(Modifier.height(8.dp))
                 Text(
                     text = "2000년대 감성을 담은 올해의 큐레이션. $trackCount Tracks",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.background.copy(alpha = 0.7f),
+                    style = Y2KTheme.textStyles.bodySmall,
+                    color = Y2KTheme.colors.bg.copy(alpha = 0.7f),
                 )
                 Spacer(Modifier.height(16.dp))
                 Y2KButton(
@@ -174,7 +174,7 @@ private fun FeaturedCard(trackCount: Int, onClick: () -> Unit) {
                 text = "✦ ✦ ✦",
                 modifier = Modifier.align(Alignment.TopEnd),
                 fontSize = 24.sp,
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                color = Y2KTheme.colors.accent.copy(alpha = 0.15f),
             )
         }
     }
@@ -203,8 +203,8 @@ private fun RecommendationRow(tracks: List<Y2KTrack>, onTrackClick: (Int) -> Uni
                     )
                 }
                 Spacer(Modifier.height(8.dp))
-                Text(track.title, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text(track.artist, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(track.title, style = Y2KTheme.textStyles.bodySmall, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(track.artist, style = Y2KTheme.textStyles.labelSmall, color = Y2KTheme.colors.fgMuted, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }
     }
@@ -229,8 +229,8 @@ private fun AlbumGrid(albums: List<Y2KAlbum>, onAlbumClick: (album: String) -> U
                             )
                         }
                         Spacer(Modifier.height(8.dp))
-                        Text(album.name, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        Text(album.artist, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(album.name, style = Y2KTheme.textStyles.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(album.artist, style = Y2KTheme.textStyles.labelSmall, color = Y2KTheme.colors.fgMuted)
                     }
                 }
                 if (row.size == 1) {
@@ -288,8 +288,8 @@ private fun PlaylistSection(playlists: List<PlaylistInfo>, onAlbumClick: (album:
             Row(
                 modifier = Modifier.fillMaxWidth()
                     .clip(RoundedCornerShape(8.dp))
-                    .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.surface)
+                    .border(1.5.dp, Y2KTheme.colors.border, RoundedCornerShape(8.dp))
+                    .background(Y2KTheme.colors.surface)
                     .clickable { onAlbumClick(playlist.firstAlbum) }
                     .padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -298,7 +298,7 @@ private fun PlaylistSection(playlists: List<PlaylistInfo>, onAlbumClick: (album:
                 Box(
                     modifier = Modifier.size(56.dp)
                         .clip(RoundedCornerShape(4.dp))
-                        .background(MaterialTheme.colorScheme.outline),
+                        .background(Y2KTheme.colors.border),
                 ) {
                     Column {
                         Row(modifier = Modifier.weight(1f)) {
@@ -325,13 +325,13 @@ private fun PlaylistSection(playlists: List<PlaylistInfo>, onAlbumClick: (album:
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     Text(playlist.name, fontSize = 14.sp, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    Text(meta, fontFamily = MonoFontFamily, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(meta, fontFamily = MonoFontFamily, fontSize = 12.sp, color = Y2KTheme.colors.fgMuted)
                 }
                 Icon(
                     Icons.AutoMirrored.Filled.KeyboardArrowRight,
                     contentDescription = null,
                     modifier = Modifier.size(20.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    tint = Y2KTheme.colors.fgMuted,
                 )
             }
         }

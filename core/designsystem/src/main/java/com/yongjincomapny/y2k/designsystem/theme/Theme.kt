@@ -6,12 +6,27 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
+object Y2KTheme {
+    val colors: Y2KColors
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalY2KColors.current
+
+    val textStyles: Y2KTextStyles
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalY2KTextStyles.current
+}
+
+// Material3 ColorScheme — feature 모듈 호환용 (점진적 제거 예정)
 private val Y2KLightColorScheme = lightColorScheme(
     primary = Y2KAccent,
     onPrimary = Color.White,
@@ -83,23 +98,32 @@ fun Y2KTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (darkTheme) Y2KDarkColorScheme else Y2KLightColorScheme
+    val y2kColors = if (darkTheme) Y2KDarkColors else Y2KLightColors
+    val materialColorScheme = if (darkTheme) Y2KDarkColorScheme else Y2KLightColorScheme
 
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.background.toArgb()
-            window.navigationBarColor = colorScheme.background.toArgb()
+            @Suppress("DEPRECATION")
+            window.statusBarColor = y2kColors.bg.toArgb()
+            @Suppress("DEPRECATION")
+            window.navigationBarColor = y2kColors.bg.toArgb()
             val insetsController = WindowCompat.getInsetsController(window, view)
             insetsController.isAppearanceLightStatusBars = !darkTheme
             insetsController.isAppearanceLightNavigationBars = !darkTheme
         }
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Y2KTypography,
-        content = content,
-    )
+    CompositionLocalProvider(
+        LocalY2KColors provides y2kColors,
+        LocalY2KTextStyles provides Y2KDefaultTextStyles,
+    ) {
+        // MaterialTheme wrapping은 feature 모듈 호환을 위해 유지
+        MaterialTheme(
+            colorScheme = materialColorScheme,
+            typography = Y2KMaterialTypography,
+            content = content,
+        )
+    }
 }
