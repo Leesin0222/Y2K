@@ -65,14 +65,49 @@ fun SearchScreen(
     modifier: Modifier = Modifier,
 ) {
     var query by remember { mutableStateOf("") }
-    var selectedGenre by remember { mutableIntStateOf(0) }
-    val genres = listOf("All", "Pop", "R&B", "Hip-Hop", "Electronic", "Rock", "Dance", "K-Pop")
+    var selectedFilter by remember { mutableIntStateOf(0) }
+    val filters = listOf("전체", "제목", "아티스트", "앨범")
+    var selectedGenre by remember { mutableStateOf<String?>(null) }
+    var selectedMood by remember { mutableStateOf<String?>(null) }
 
-    val displayTracks = if (query.isBlank()) {
-        tracks.take(5)
-    } else {
-        tracks.filter {
-            it.title.contains(query, ignoreCase = true) || it.artist.contains(query, ignoreCase = true)
+    val availableGenres = remember(tracks) {
+        tracks.flatMap { it.genres }.distinct().sorted()
+    }
+    val availableMoods = remember(tracks) {
+        tracks.flatMap { it.moods }.distinct().sorted()
+    }
+
+    val displayTracks = remember(query, selectedFilter, selectedGenre, selectedMood, tracks) {
+        var result = tracks
+
+        // 장르/무드 필터
+        if (selectedGenre != null) {
+            result = result.filter { selectedGenre in it.genres }
+        }
+        if (selectedMood != null) {
+            result = result.filter { selectedMood in it.moods }
+        }
+
+        // 텍스트 검색
+        if (query.isBlank()) {
+            result.take(10)
+        } else {
+            val matchedTags = resolveNaturalLanguageTags(query)
+            result.filter { track ->
+                val textMatch = when (selectedFilter) {
+                    1 -> track.title.contains(query, ignoreCase = true)
+                    2 -> track.artist.contains(query, ignoreCase = true)
+                    3 -> track.album.contains(query, ignoreCase = true)
+                    else -> track.title.contains(query, ignoreCase = true)
+                        || track.artist.contains(query, ignoreCase = true)
+                        || track.album.contains(query, ignoreCase = true)
+                }
+                val tagMatch = if (matchedTags.first.isNotEmpty() || matchedTags.second.isNotEmpty()) {
+                    (matchedTags.first.isEmpty() || track.genres.any { it in matchedTags.first })
+                        && (matchedTags.second.isEmpty() || track.moods.any { it in matchedTags.second })
+                } else false
+                textMatch || tagMatch
+            }
         }
     }
 
@@ -90,7 +125,7 @@ fun SearchScreen(
             value = query,
             onValueChange = { query = it },
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-            placeholder = { Text("트랙, 아티스트, 앨범 검색...") },
+            placeholder = { Text("트랙, 아티스트, 앨범 또는 \"신나는 음악\"") },
             trailingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
             shape = CircleShape,
             colors = OutlinedTextFieldDefaults.colors(
@@ -103,18 +138,58 @@ fun SearchScreen(
         Spacer(Modifier.height(16.dp))
 
         Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-            SectionHeader("장르")
+            SectionHeader("검색 필터")
             Spacer(Modifier.height(12.dp))
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                genres.forEachIndexed { index, genre ->
+                filters.forEachIndexed { index, filter ->
                     Y2KChip(
-                        text = genre,
-                        selected = selectedGenre == index,
-                        onClick = { selectedGenre = index },
+                        text = filter,
+                        selected = selectedFilter == index,
+                        onClick = { selectedFilter = index },
                     )
+                }
+            }
+        }
+
+        if (availableGenres.isNotEmpty()) {
+            Spacer(Modifier.height(16.dp))
+            Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                SectionHeader("장르")
+                Spacer(Modifier.height(8.dp))
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    availableGenres.forEach { genre ->
+                        Y2KChip(
+                            text = genre,
+                            selected = selectedGenre == genre,
+                            onClick = { selectedGenre = if (selectedGenre == genre) null else genre },
+                        )
+                    }
+                }
+            }
+        }
+
+        if (availableMoods.isNotEmpty()) {
+            Spacer(Modifier.height(12.dp))
+            Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                SectionHeader("무드")
+                Spacer(Modifier.height(8.dp))
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    availableMoods.forEach { mood ->
+                        Y2KChip(
+                            text = mood,
+                            selected = selectedMood == mood,
+                            onClick = { selectedMood = if (selectedMood == mood) null else mood },
+                        )
+                    }
                 }
             }
         }
@@ -126,7 +201,12 @@ fun SearchScreen(
             contentPadding = PaddingValues(bottom = 16.dp),
         ) {
             item {
-                SectionHeader(if (query.isBlank()) "트렌딩" else "검색 결과")
+                val sectionTitle = when {
+                    query.isNotBlank() -> "검색 결과"
+                    selectedGenre != null || selectedMood != null -> "필터 결과"
+                    else -> "트렌딩"
+                }
+                SectionHeader(sectionTitle)
                 Spacer(Modifier.height(12.dp))
             }
 
@@ -167,46 +247,43 @@ fun SearchScreen(
                 }
             }
 
-            if (query.isBlank()) {
-                item {
-                    Spacer(Modifier.height(24.dp))
-                    SectionHeader("카테고리")
-                    Spacer(Modifier.height(12.dp))
-                }
-
-                val categories = listOf(
-                    "Y2K Hits" to "248 tracks", "Club Anthems" to "186 tracks",
-                    "Slow Jams" to "132 tracks", "New Releases" to "64 tracks",
-                )
-
-                item {
-                    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                        for (row in categories.chunked(2)) {
-                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                for ((name, count) in row) {
-                                    Box(
-                                        modifier = Modifier.weight(1f).height(88.dp).clip(RoundedCornerShape(8.dp))
-                                            .border(1.5.dp, Y2KTheme.colors.border, RoundedCornerShape(8.dp))
-                                            .background(Y2KTheme.colors.surfaceRaised)
-                                            .clickable { }.padding(12.dp),
-                                        contentAlignment = Alignment.BottomStart,
-                                    ) {
-                                        Text("✦", modifier = Modifier.align(Alignment.TopEnd), fontSize = 18.sp,
-                                            color = Y2KTheme.colors.fg.copy(alpha = 0.15f))
-                                        Column {
-                                            Text(name, style = Y2KTheme.textStyles.headlineSmall)
-                                            Text(count, fontFamily = MonoFontFamily, fontSize = 10.sp, color = Y2KTheme.colors.fgMuted)
-                                        }
-                                    }
-                                }
-                            }
-                            Spacer(Modifier.height(12.dp))
-                        }
-                    }
-                }
-            }
         }
     }
+}
+
+private fun resolveNaturalLanguageTags(query: String): Pair<List<String>, List<String>> {
+    val lower = query.lowercase()
+    val genres = mutableListOf<String>()
+    val moods = mutableListOf<String>()
+
+    val genreKeywords = mapOf(
+        "팝" to "Pop", "록" to "Rock", "락" to "Rock",
+        "힙합" to "Hip-Hop", "랩" to "Hip-Hop",
+        "재즈" to "Jazz", "클래식" to "Classical",
+        "전자" to "Electronic", "일렉" to "Electronic",
+        "알앤비" to "R&B", "r&b" to "R&B",
+        "발라드" to "Vocal", "컨트리" to "Country",
+        "메탈" to "Metal", "블루스" to "Blues",
+        "소울" to "Soul", "펑크" to "Punk",
+        "레게" to "Reggae", "포크" to "Folk",
+    )
+    val moodKeywords = mapOf(
+        "슬픈" to "Sad", "슬프" to "Sad", "우울" to "Sad", "감성" to "Sad",
+        "비 오는" to "Sad", "비오는" to "Sad",
+        "신나" to "Energetic", "힘찬" to "Energetic", "운동" to "Energetic", "파티" to "Energetic",
+        "행복" to "Happy", "기분 좋" to "Happy",
+        "잔잔" to "Tender", "잠" to "Tender", "편안" to "Tender", "휴식" to "Tender",
+        "화난" to "Aggressive", "격한" to "Aggressive",
+        "무서" to "Dark", "어두" to "Dark",
+    )
+
+    genreKeywords.forEach { (keyword, genre) ->
+        if (lower.contains(keyword)) genres.add(genre)
+    }
+    moodKeywords.forEach { (keyword, mood) ->
+        if (lower.contains(keyword)) moods.add(mood)
+    }
+    return genres.distinct() to moods.distinct()
 }
 
 private fun formatDuration(ms: Long): String {

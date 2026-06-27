@@ -11,4 +11,5 @@ dependencies {
     implementation(project(":feature:home:api"))
     implementation(project(":core:designsystem"))
     implementation(project(":core:player:api"))
+    implementation(project(":core:ai:api"))
 }

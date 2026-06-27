@@ -34,6 +34,9 @@ dependencies {
     implementation(project(":core:navigation"))
     implementation(project(":core:player:api"))
     implementation(project(":core:player:impl"))
+    implementation(project(":core:ai:api"))
+    implementation(project(":core:ai:impl"))
+    implementation(project(":core:database"))
 
     implementation(project(":feature:home:api"))
     implementation(project(":feature:home:impl"))
@@ -51,13 +54,18 @@ dependencies {
     implementation(project(":feature:tracklist:impl"))
     implementation(project(":feature:artistdetail:api"))
     implementation(project(":feature:artistdetail:impl"))
+    implementation(project(":feature:aidj:api"))
+    implementation(project(":feature:aidj:impl"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.work.runtime)
     implementation(libs.hilt.android)
+    implementation(libs.hilt.work)
     ksp(libs.hilt.compiler)
+    ksp(libs.hilt.work.compiler)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

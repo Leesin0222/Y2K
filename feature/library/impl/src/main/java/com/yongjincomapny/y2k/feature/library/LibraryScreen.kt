@@ -24,14 +24,22 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Icon
 import com.yongjincomapny.y2k.designsystem.theme.Y2KTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -40,10 +48,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import kotlin.math.roundToInt
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.yongjincomapny.y2k.core.player.UserPlaylist
 import com.yongjincomapny.y2k.core.player.Y2KAlbum
 import com.yongjincomapny.y2k.core.player.Y2KTrack
 import com.yongjincomapny.y2k.core.player.toAlbums
@@ -73,16 +83,50 @@ private data class ArtistInfo(
 @Composable
 fun LibraryScreen(
     tracks: List<Y2KTrack>,
+    userPlaylists: List<UserPlaylist> = emptyList(),
+    favoriteIds: Set<String> = emptySet(),
     onAlbumClick: (album: String) -> Unit,
     onTrackClick: (index: Int) -> Unit,
     onArtistClick: (artist: String) -> Unit,
+    onCreatePlaylist: (name: String) -> Unit = {},
+    onDeletePlaylist: (id: Long) -> Unit = {},
+    onRenamePlaylist: (id: Long, name: String) -> Unit = { _, _ -> },
+    onPlaylistClick: (id: Long) -> Unit = {},
+    onPlayFavorites: () -> Unit = {},
+    recentTrackIds: List<String> = emptyList(),
+    onPlayRecent: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
     val tabs = listOf("All", "Albums", "Playlists", "Artists")
-    val recentTracks = remember(tracks) { tracks.takeLast(4).reversed() }
+    val recentTracks = remember(tracks, recentTrackIds) {
+        if (recentTrackIds.isNotEmpty()) {
+            recentTrackIds.take(4).mapNotNull { id -> tracks.find { it.id == id } }
+        } else {
+            tracks.takeLast(4).reversed()
+        }
+    }
     val albums = remember(tracks) { tracks.toAlbums() }
     val hiResCount = remember(tracks) { tracks.count { it.isHiRes } }
+    val genreDistribution = remember(tracks) {
+        val analyzed = tracks.filter { it.aiAnalyzed }
+        if (analyzed.isEmpty()) emptyList()
+        else analyzed.flatMap { it.genres }
+            .groupingBy { it }.eachCount()
+            .entries.sortedByDescending { it.value }
+            .take(5)
+            .map { it.key to it.value }
+    }
+    val moodDistribution = remember(tracks) {
+        val analyzed = tracks.filter { it.aiAnalyzed }
+        if (analyzed.isEmpty()) emptyList()
+        else analyzed.flatMap { it.moods }
+            .groupingBy { it }.eachCount()
+            .entries.sortedByDescending { it.value }
+            .take(5)
+            .map { it.key to it.value }
+    }
+    val analyzedCount = remember(tracks) { tracks.count { it.aiAnalyzed } }
     val artists = remember(tracks) {
         tracks.groupBy { it.artist }.map { (artist, trackList) ->
             val albumCount = trackList.map { it.album }.distinct().size
@@ -129,7 +173,7 @@ fun LibraryScreen(
                     listOf(
                         "${tracks.size}" to "Tracks",
                         "${albums.size}" to "Albums",
-                        "${albums.size}" to "Playlists",
+                        "${artists.size}" to "Artists",
                     ).forEach { (num, label) ->
                         Column(
                             modifier = Modifier.weight(1f).clip(RoundedCornerShape(8.dp))
@@ -150,6 +194,49 @@ fun LibraryScreen(
             }
         }
 
+        // === All tab: AI Stats ===
+        if (selectedTab == 0 && genreDistribution.isNotEmpty()) {
+            item {
+                Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                    SectionHeader("AI 분석 통계")
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        "$analyzedCount / ${tracks.size} 트랙 분석 완료",
+                        fontFamily = MonoFontFamily,
+                        fontSize = 11.sp,
+                        color = Y2KTheme.colors.fgMuted,
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    Text("장르", style = Y2KTheme.textStyles.titleMedium, fontSize = 13.sp)
+                    Spacer(Modifier.height(8.dp))
+                    val genreTotal = genreDistribution.sumOf { it.second }
+                    genreDistribution.forEach { (genre, count) ->
+                        DistributionBar(
+                            label = genre,
+                            count = count,
+                            total = genreTotal,
+                            color = Y2KTheme.colors.accent,
+                        )
+                    }
+                    if (moodDistribution.isNotEmpty()) {
+                        Spacer(Modifier.height(12.dp))
+                        Text("무드", style = Y2KTheme.textStyles.titleMedium, fontSize = 13.sp)
+                        Spacer(Modifier.height(8.dp))
+                        val moodTotal = moodDistribution.sumOf { it.second }
+                        moodDistribution.forEach { (mood, count) ->
+                            DistributionBar(
+                                label = mood,
+                                count = count,
+                                total = moodTotal,
+                                color = Y2KTheme.colors.fg,
+                            )
+                        }
+                    }
+                }
+                Spacer(Modifier.height(20.dp))
+            }
+        }
+
         // === All tab: Quick Actions + Recently Added ===
         if (selectedTab == 0) {
             item {
@@ -157,13 +244,14 @@ fun LibraryScreen(
                 Spacer(Modifier.height(8.dp))
             }
             val quickActions = listOf(
-                Triple(Icons.Default.Favorite, "좋아요 표시한 트랙", "$hiResCount tracks"),
-                Triple(Icons.Default.Download, "다운로드한 트랙", "${tracks.size} tracks"),
-                Triple(Icons.Default.AccessTime, "최근 재생", "${recentTracks.size} tracks"),
+                Triple(Icons.Default.Favorite, "좋아요 표시한 트랙", "${favoriteIds.size} tracks") to onPlayFavorites,
+                Triple(Icons.Default.Download, "다운로드한 트랙", "${tracks.size} tracks") to {},
+                Triple(Icons.Default.AccessTime, "최근 재생", "${recentTrackIds.size} tracks") to onPlayRecent,
             )
             items(quickActions.size) { i ->
-                val (icon, name, count) = quickActions[i]
-                QuickActionItem(icon, name, count, showDivider = i < quickActions.size - 1, onClick = { })
+                val (info, action) = quickActions[i]
+                val (icon, name, count) = info
+                QuickActionItem(icon, name, count, showDivider = i < quickActions.size - 1, onClick = action)
             }
         }
 
@@ -171,19 +259,13 @@ fun LibraryScreen(
         if (selectedTab == 0 && recentTracks.isNotEmpty()) {
             item {
                 Spacer(Modifier.height(24.dp))
-                SectionHeader("최근 추가")
+                SectionHeader("내 트랙")
                 Spacer(Modifier.height(8.dp))
             }
             itemsIndexed(recentTracks, key = { _, track -> "recent_${track.id}" }) { index, track ->
                 val originalIndex = tracks.indexOf(track)
-                val dateLabel = when (index) {
-                    0 -> "오늘"
-                    1 -> "어제"
-                    else -> "${index}일 전"
-                }
                 RecentTrackRow(
                     track = track,
-                    dateLabel = dateLabel,
                     colorIndex = index,
                     showDivider = index < recentTracks.size - 1,
                     onClick = { onTrackClick(originalIndex) },
@@ -205,22 +287,21 @@ fun LibraryScreen(
 
         // === Playlists tab ===
         if (selectedTab == 2) {
-            if (albums.isNotEmpty()) {
-                item {
-                    Spacer(Modifier.height(24.dp))
-                    SectionHeader("내 플레이리스트")
-                    Spacer(Modifier.height(12.dp))
-                }
-                items(albums.size) { i ->
-                    val album = albums[i]
-                    val albumTracks = tracks.filter { it.album == album.name }
-                    val totalDuration = albumTracks.sumOf { it.duration }
-                    PlaylistCard(
-                        name = album.name,
-                        trackCount = album.trackCount,
-                        duration = formatDuration(totalDuration),
+            item {
+                Spacer(Modifier.height(24.dp))
+                SectionHeader("내 플레이리스트")
+                Spacer(Modifier.height(12.dp))
+                NewPlaylistButton(onCreatePlaylist)
+            }
+            if (userPlaylists.isNotEmpty()) {
+                items(userPlaylists.size) { i ->
+                    val playlist = userPlaylists[i]
+                    UserPlaylistRow(
+                        playlist = playlist,
                         colorIndex = i,
-                        onClick = { onAlbumClick(album.name) },
+                        showDivider = i < userPlaylists.size - 1,
+                        onClick = { onPlaylistClick(playlist.id) },
+                        onDelete = { onDeletePlaylist(playlist.id) },
                     )
                 }
             }
@@ -387,7 +468,6 @@ private fun ArtistRow(
 @Composable
 private fun RecentTrackRow(
     track: Y2KTrack,
-    dateLabel: String,
     colorIndex: Int,
     showDivider: Boolean,
     onClick: () -> Unit,
@@ -408,7 +488,6 @@ private fun RecentTrackRow(
                 Text(track.title, style = Y2KTheme.textStyles.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text("${track.artist} · ${track.album}", fontSize = 12.sp, color = Y2KTheme.colors.fgMuted)
             }
-            Text(dateLabel, fontFamily = MonoFontFamily, fontSize = 11.sp, color = Y2KTheme.colors.fgMuted)
         }
         if (showDivider) {
             HorizontalDivider(color = Y2KTheme.colors.border, thickness = 1.dp)
@@ -443,6 +522,149 @@ private fun LibraryAlbumGrid(albums: List<Y2KAlbum>, onAlbumClick: (album: Strin
             }
             Spacer(Modifier.height(16.dp))
         }
+    }
+}
+
+@Composable
+private fun NewPlaylistButton(onCreatePlaylist: (String) -> Unit) {
+    var showDialog by remember { mutableStateOf(false) }
+    var playlistName by remember { mutableStateOf("") }
+    val accentColor = Y2KTheme.colors.accent
+
+    Row(
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .border(1.5.dp, Y2KTheme.colors.border, RoundedCornerShape(8.dp))
+            .background(Y2KTheme.colors.surface)
+            .clickable { showDialog = true }
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Box(
+            modifier = Modifier.size(44.dp).clip(RoundedCornerShape(8.dp))
+                .border(1.5.dp, Y2KTheme.colors.accent, RoundedCornerShape(8.dp)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(Icons.Default.Add, contentDescription = null, tint = Y2KTheme.colors.accent, modifier = Modifier.size(22.dp))
+        }
+        Text("새 플레이리스트", style = Y2KTheme.textStyles.titleMedium)
+    }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false; playlistName = "" },
+            title = { Text("새 플레이리스트", style = Y2KTheme.textStyles.titleMedium) },
+            text = {
+                OutlinedTextField(
+                    value = playlistName,
+                    onValueChange = { playlistName = it },
+                    placeholder = { Text("플레이리스트 이름") },
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = accentColor,
+                    ),
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        if (playlistName.isNotBlank()) {
+                            onCreatePlaylist(playlistName.trim())
+                            playlistName = ""
+                            showDialog = false
+                        }
+                    },
+                ) { Text("생성", color = accentColor) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDialog = false; playlistName = "" }) {
+                    Text("취소")
+                }
+            },
+        )
+    }
+}
+
+@Composable
+private fun UserPlaylistRow(
+    playlist: UserPlaylist,
+    colorIndex: Int,
+    showDivider: Boolean,
+    onClick: () -> Unit,
+    onDelete: () -> Unit,
+) {
+    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            val colors = gradientColors[colorIndex % gradientColors.size]
+            Box(
+                modifier = Modifier.size(48.dp).clip(RoundedCornerShape(8.dp))
+                    .border(1.5.dp, Y2KTheme.colors.border, RoundedCornerShape(8.dp))
+                    .background(Brush.linearGradient(listOf(colors.first, colors.second))),
+                contentAlignment = Alignment.Center,
+            ) { Text("♫", fontSize = 20.sp) }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(playlist.name, style = Y2KTheme.textStyles.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(
+                    "${playlist.trackCount} tracks",
+                    fontFamily = MonoFontFamily,
+                    fontSize = 12.sp,
+                    color = Y2KTheme.colors.fgMuted,
+                )
+            }
+            IconButton(onClick = onDelete, modifier = Modifier.size(32.dp)) {
+                Icon(Icons.Default.Delete, contentDescription = "Delete", modifier = Modifier.size(18.dp), tint = Y2KTheme.colors.fgMuted)
+            }
+            Icon(
+                Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null,
+                modifier = Modifier.size(18.dp), tint = Y2KTheme.colors.fgMuted,
+            )
+        }
+        if (showDivider) {
+            HorizontalDivider(color = Y2KTheme.colors.border, thickness = 1.dp)
+        }
+    }
+}
+
+@Composable
+private fun DistributionBar(label: String, count: Int, total: Int, color: Color) {
+    val percent = if (total > 0) (count * 100f / total).roundToInt() else 0
+    val fraction = if (total > 0) count.toFloat() / total else 0f
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            label,
+            fontFamily = MonoFontFamily,
+            fontSize = 11.sp,
+            modifier = Modifier.width(80.dp),
+        )
+        Box(
+            modifier = Modifier.weight(1f).height(14.dp)
+                .clip(RoundedCornerShape(3.dp))
+                .background(Y2KTheme.colors.surface)
+                .border(1.dp, Y2KTheme.colors.border, RoundedCornerShape(3.dp)),
+        ) {
+            Box(
+                modifier = Modifier.fillMaxWidth(fraction).height(14.dp)
+                    .clip(RoundedCornerShape(3.dp))
+                    .background(color.copy(alpha = 0.6f)),
+            )
+        }
+        Spacer(Modifier.width(8.dp))
+        Text(
+            "$percent%",
+            fontFamily = MonoFontFamily,
+            fontSize = 10.sp,
+            color = Y2KTheme.colors.fgMuted,
+            modifier = Modifier.width(32.dp),
+        )
     }
 }
 

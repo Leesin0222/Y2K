@@ -5,9 +5,17 @@ import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,7 +29,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.QueueMusic
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.PlaylistAdd
+import androidx.compose.material.icons.filled.Lyrics
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
@@ -64,15 +76,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.yongjincomapny.y2k.core.player.PlaybackState
 import com.yongjincomapny.y2k.core.player.RepeatMode
+import com.yongjincomapny.y2k.core.player.UserPlaylist
+import androidx.compose.foundation.clickable
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import com.yongjincomapny.y2k.designsystem.component.AlbumArt
 import com.yongjincomapny.y2k.designsystem.component.Y2KButtonStyle
 import com.yongjincomapny.y2k.designsystem.component.Y2KIconButton as Y2KIconBtn
 import com.yongjincomapny.y2k.designsystem.theme.MonoFontFamily
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun NowPlayingScreen(
     playbackState: PlaybackState,
+    userPlaylists: List<UserPlaylist> = emptyList(),
     onBack: () -> Unit,
     onQueueClick: () -> Unit,
     onPlayPause: () -> Unit,
@@ -81,6 +98,10 @@ fun NowPlayingScreen(
     onSeek: (Long) -> Unit,
     onToggleShuffle: () -> Unit,
     onCycleRepeatMode: () -> Unit,
+    onAddToPlaylist: (playlistId: Long) -> Unit = {},
+    isFavorite: Boolean = false,
+    onToggleFavorite: () -> Unit = {},
+    lyrics: String? = null,
     modifier: Modifier = Modifier,
 ) {
     val track = playbackState.currentTrack
@@ -88,9 +109,13 @@ fun NowPlayingScreen(
     val artist = track?.artist ?: "-"
     val album = track?.album ?: ""
     val isHiRes = track?.isHiRes ?: false
+    val genres = track?.genres.orEmpty()
+    val moods = track?.moods.orEmpty()
 
     var isSeeking by remember { mutableStateOf(false) }
     var seekValue by remember { mutableFloatStateOf(0f) }
+    var showPlaylistPicker by remember { mutableStateOf(false) }
+    var showLyrics by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier.fillMaxSize().background(Y2KTheme.colors.bg),
@@ -104,7 +129,12 @@ fun NowPlayingScreen(
                 IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") }
             },
             actions = {
-                IconButton(onClick = { }) { Icon(Icons.Default.MoreVert, contentDescription = "Menu") }
+                IconButton(onClick = { if (lyrics != null) showLyrics = !showLyrics }) {
+                    Icon(
+                        Icons.Default.Lyrics, contentDescription = "Lyrics",
+                        tint = if (showLyrics) Y2KTheme.colors.accent else if (lyrics != null) Y2KTheme.colors.fg else Y2KTheme.colors.fgMuted,
+                    )
+                }
             },
             colors = TopAppBarDefaults.topAppBarColors(containerColor = Y2KTheme.colors.bg),
             windowInsets = WindowInsets(0),
@@ -114,25 +144,43 @@ fun NowPlayingScreen(
             modifier = Modifier.fillMaxSize().padding(horizontal = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
         ) {
-            // Album art with hard shadow
-            Box {
-                // Hard shadow
+            // Album art with hard shadow / Lyrics overlay
+            if (showLyrics && lyrics != null) {
                 Box(
                     modifier = Modifier
                         .size(280.dp)
-                        .offset(x = 4.dp, y = 4.dp)
                         .clip(RoundedCornerShape(16.dp))
-                        .background(Y2KTheme.colors.fg),
-                )
-                Box(
-                    modifier = Modifier
-                        .border(2.dp, Y2KTheme.colors.fg, RoundedCornerShape(16.dp)),
+                        .background(Y2KTheme.colors.surface)
+                        .border(2.dp, Y2KTheme.colors.fg, RoundedCornerShape(16.dp))
+                        .padding(16.dp),
                 ) {
-                    AlbumArt(
-                        artworkUri = track?.artworkUri,
-                        size = 280.dp,
-                        cornerRadius = 16.dp,
+                    Text(
+                        text = lyrics,
+                        style = Y2KTheme.textStyles.bodySmall,
+                        color = Y2KTheme.colors.fg,
+                        lineHeight = 22.sp,
+                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
                     )
+                }
+            } else {
+                Box {
+                    Box(
+                        modifier = Modifier
+                            .size(280.dp)
+                            .offset(x = 4.dp, y = 4.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(Y2KTheme.colors.fg),
+                    )
+                    Box(
+                        modifier = Modifier
+                            .border(2.dp, Y2KTheme.colors.fg, RoundedCornerShape(16.dp)),
+                    ) {
+                        AlbumArt(
+                            artworkUri = track?.artworkUri,
+                            size = 280.dp,
+                            cornerRadius = 16.dp,
+                        )
+                    }
                 }
             }
 
@@ -150,6 +198,21 @@ fun NowPlayingScreen(
             )
             if (album.isNotEmpty()) {
                 Text(album, fontFamily = MonoFontFamily, fontSize = 12.sp, color = Y2KTheme.colors.accent, maxLines = 1)
+            }
+            if (genres.isNotEmpty() || moods.isNotEmpty()) {
+                Spacer(Modifier.height(8.dp))
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    genres.forEach { genre ->
+                        TagChip(text = genre, color = Y2KTheme.colors.accent)
+                    }
+                    moods.forEach { mood ->
+                        TagChip(text = mood, color = Y2KTheme.colors.fgMuted)
+                    }
+                }
             }
             Spacer(Modifier.height(8.dp))
             if (isHiRes) {
@@ -219,9 +282,18 @@ fun NowPlayingScreen(
 
             // Action row — like / shuffle / repeat / queue
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = { }) {
+                IconButton(onClick = onToggleFavorite) {
                     Icon(
-                        Icons.Default.FavoriteBorder, contentDescription = "Like",
+                        if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                        contentDescription = "Favorite",
+                        tint = if (isFavorite) Y2KTheme.colors.accent else Y2KTheme.colors.fgMuted,
+                        modifier = Modifier.size(22.dp),
+                    )
+                }
+                Spacer(Modifier.width(16.dp))
+                IconButton(onClick = { if (track != null) showPlaylistPicker = true }) {
+                    Icon(
+                        Icons.Default.PlaylistAdd, contentDescription = "Add to playlist",
                         tint = Y2KTheme.colors.fgMuted,
                         modifier = Modifier.size(22.dp),
                     )
@@ -252,6 +324,69 @@ fun NowPlayingScreen(
 
         }
     }
+
+    if (showPlaylistPicker && userPlaylists.isNotEmpty()) {
+        PlaylistPickerDialog(
+            playlists = userPlaylists,
+            onSelect = { playlistId ->
+                onAddToPlaylist(playlistId)
+                showPlaylistPicker = false
+            },
+            onDismiss = { showPlaylistPicker = false },
+        )
+    }
+}
+
+@Composable
+private fun PlaylistPickerDialog(
+    playlists: List<UserPlaylist>,
+    onSelect: (Long) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("플레이리스트에 추가", style = Y2KTheme.textStyles.titleMedium) },
+        text = {
+            LazyColumn(modifier = Modifier.heightIn(max = 300.dp)) {
+                items(playlists) { playlist ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth()
+                            .clickable { onSelect(playlist.id) }
+                            .padding(vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text("♫", fontSize = 18.sp, modifier = Modifier.width(32.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(playlist.name, style = Y2KTheme.textStyles.bodyLarge)
+                            Text(
+                                "${playlist.trackCount} tracks",
+                                fontFamily = MonoFontFamily,
+                                fontSize = 11.sp,
+                                color = Y2KTheme.colors.fgMuted,
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("취소") }
+        },
+    )
+}
+
+@Composable
+private fun TagChip(text: String, color: Color) {
+    Text(
+        text = text,
+        fontFamily = MonoFontFamily,
+        fontSize = 10.sp,
+        color = color,
+        modifier = Modifier
+            .border(1.dp, color, RoundedCornerShape(4.dp))
+            .padding(horizontal = 8.dp, vertical = 3.dp),
+    )
 }
 
 @Composable

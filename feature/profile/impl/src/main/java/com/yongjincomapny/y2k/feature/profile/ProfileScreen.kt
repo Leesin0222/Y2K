@@ -24,10 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import com.yongjincomapny.y2k.designsystem.theme.Y2KTheme
@@ -56,23 +53,6 @@ private val artistColors = listOf(
     Color(0xFFF5D3D3) to Color(0xFFD47474),
 )
 
-private data class RandomProfile(
-    val name: String,
-    val handle: String,
-    val initials: String,
-    val year: Int,
-)
-
-private val profilePool = listOf(
-    RandomProfile("Alex", "@alex_y2k", "AL", 2023),
-    RandomProfile("Luna", "@luna_beats", "LU", 2024),
-    RandomProfile("Kai", "@kai_music", "KA", 2022),
-    RandomProfile("Miso", "@miso_wav", "MI", 2024),
-    RandomProfile("Haru", "@haru_sound", "HR", 2023),
-    RandomProfile("Nova", "@nova_hifi", "NV", 2024),
-    RandomProfile("Zen", "@zen_vinyl", "ZN", 2022),
-    RandomProfile("Riku", "@riku_bass", "RK", 2023),
-)
 
 @Composable
 fun ProfileScreen(
@@ -80,7 +60,6 @@ fun ProfileScreen(
     appVersion: String,
     modifier: Modifier = Modifier,
 ) {
-    val profile = remember { profilePool.random() }
     val artists = remember(tracks) {
         tracks.groupBy { it.artist }
             .map { (artist, trackList) -> artist to trackList.size }
@@ -119,14 +98,13 @@ fun ProfileScreen(
                         .border(2.dp, Y2KTheme.colors.accent, CircleShape),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(profile.initials, style = Y2KTheme.textStyles.displaySmall,
+                    Text("Y2K", style = Y2KTheme.textStyles.displaySmall,
                         color = Y2KTheme.colors.bg)
                 }
             }
             Column(modifier = Modifier.weight(1f)) {
-                Text(profile.name, style = Y2KTheme.textStyles.displaySmall)
-                Text(profile.handle, fontFamily = MonoFontFamily, fontSize = 13.sp, color = Y2KTheme.colors.accent)
-                Text("Since ${profile.year}", fontSize = 12.sp, color = Y2KTheme.colors.fgMuted)
+                Text("User", style = Y2KTheme.textStyles.displaySmall)
+                Text("${tracks.size} tracks", fontFamily = MonoFontFamily, fontSize = 13.sp, color = Y2KTheme.colors.accent)
             }
             Box(
                 modifier = Modifier.clip(CircleShape)
@@ -136,23 +114,7 @@ fun ProfileScreen(
             ) { Text("Edit", fontSize = 12.sp, fontWeight = FontWeight.Medium) }
         }
 
-        // Subscription badge
-        Box(
-            modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp)).background(Y2KTheme.colors.fg).padding(16.dp),
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text("✦", fontSize = 28.sp, color = Y2KTheme.colors.accent)
-                Column {
-                    Text("Y2K Premium", style = Y2KTheme.textStyles.headlineSmall, color = Y2KTheme.colors.bg)
-                    Text("HI-RES 무제한 · 오프라인 재생", fontSize = 12.sp, color = Y2KTheme.colors.bg.copy(alpha = 0.7f))
-                }
-            }
-            Text("✦ ✦ ✦", modifier = Modifier.align(Alignment.TopEnd), fontSize = 20.sp,
-                color = Y2KTheme.colors.accent.copy(alpha = 0.1f))
-        }
-
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(8.dp))
 
         // Listening stats
         Row(modifier = Modifier.padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -206,16 +168,11 @@ fun ProfileScreen(
 
         val settingsGroups = listOf(
             listOf(
-                Triple(Icons.Default.Mic, "오디오 품질", "HI-RES · FLAC 우선"),
-                Triple(Icons.Default.Download, "다운로드", "${tracks.size}곡"),
-                Triple(Icons.Default.Settings, "일반 설정", "언어, 알림, 캐시"),
+                Triple(Icons.Default.Mic, "오디오 품질", ""),
+                Triple(Icons.Default.Settings, "일반 설정", ""),
             ),
             listOf(
-                Triple(Icons.Default.Notifications, "알림", "새 릴리즈, 추천 알림"),
-                Triple(Icons.Default.Security, "개인정보 보호", "계정 보안, 데이터 관리"),
-            ),
-            listOf(
-                Triple(Icons.AutoMirrored.Filled.HelpOutline, "도움말 & 피드백", "FAQ, 버그 리포트"),
+                Triple(Icons.AutoMirrored.Filled.HelpOutline, "도움말 & 피드백", ""),
                 Triple(Icons.Default.Info, "앱 정보", "Y2K v$appVersion"),
             ),
         )
@@ -247,7 +204,9 @@ private fun SettingsItem(icon: ImageVector, name: String, desc: String) {
         ) { Icon(icon, contentDescription = null, modifier = Modifier.size(18.dp)) }
         Column(modifier = Modifier.weight(1f)) {
             Text(name, style = Y2KTheme.textStyles.titleMedium)
-            Text(desc, fontSize = 11.sp, color = Y2KTheme.colors.fgMuted)
+            if (desc.isNotEmpty()) {
+                Text(desc, fontSize = 11.sp, color = Y2KTheme.colors.fgMuted)
+            }
         }
         Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, modifier = Modifier.size(16.dp), tint = Y2KTheme.colors.fgMuted)
     }

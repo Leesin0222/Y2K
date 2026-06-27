@@ -13,6 +13,9 @@ data class Y2KTrack(
     val uri: Uri,
     val artworkUri: Uri? = null,
     val isHiRes: Boolean = false,
+    val genres: List<String> = emptyList(),
+    val moods: List<String> = emptyList(),
+    val aiAnalyzed: Boolean = false,
 ) {
     fun toMediaItem(): MediaItem = MediaItem.Builder()
         .setMediaId(id)

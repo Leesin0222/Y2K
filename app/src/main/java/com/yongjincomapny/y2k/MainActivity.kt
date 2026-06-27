@@ -15,6 +15,7 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Equalizer
@@ -28,7 +29,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
@@ -38,8 +42,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.yongjincomapny.y2k.core.navigation.TopLevelRoute
+import com.yongjincomapny.y2k.core.ai.SmartPlaylist
 import com.yongjincomapny.y2k.core.player.EqualizerManager
 import com.yongjincomapny.y2k.core.player.Y2KPlayer
+import com.yongjincomapny.y2k.core.player.Y2KTrack
 import com.yongjincomapny.y2k.designsystem.component.BottomNavItem
 import com.yongjincomapny.y2k.designsystem.component.MiniPlayer
 import com.yongjincomapny.y2k.designsystem.component.Y2KBottomNavBar
@@ -56,9 +62,15 @@ import com.yongjincomapny.y2k.feature.search.SearchScreen
 import com.yongjincomapny.y2k.feature.search.api.SearchRoute
 import com.yongjincomapny.y2k.feature.artistdetail.ArtistDetailScreen
 import com.yongjincomapny.y2k.feature.artistdetail.api.ArtistDetailRoute
+import com.yongjincomapny.y2k.feature.tracklist.PlaylistDetailScreen
 import com.yongjincomapny.y2k.feature.tracklist.TrackListScreen
+import com.yongjincomapny.y2k.feature.tracklist.api.PlaylistDetailRoute
 import com.yongjincomapny.y2k.feature.tracklist.api.TrackListRoute
+import com.yongjincomapny.y2k.feature.aidj.AiDjScreen
+import com.yongjincomapny.y2k.feature.aidj.AiDjViewModel
+import com.yongjincomapny.y2k.feature.aidj.api.AiDjRoute
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -95,8 +107,16 @@ private fun audioPermission(): String =
 fun Y2KApp(player: Y2KPlayer, equalizerManager: EqualizerManager) {
     val viewModel: MainViewModel = viewModel()
     val tracks by viewModel.tracks.collectAsState()
+    val smartPlaylists by viewModel.smartPlaylists.collectAsState()
+    val userPlaylists by viewModel.userPlaylists.collectAsState()
+    val favoriteIds by viewModel.favoriteIds.collectAsState()
+    val recentTrackIds by viewModel.recentTrackIds.collectAsState()
+    val currentLyrics by viewModel.currentLyrics.collectAsState()
+    val analysisProgress by viewModel.analysisProgress.collectAsState()
+    val analysisComplete by viewModel.analysisComplete.collectAsState()
     val playbackState by player.playbackState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     val context = LocalContext.current
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -123,6 +143,20 @@ fun Y2KApp(player: Y2KPlayer, equalizerManager: EqualizerManager) {
     }
     val eqState by equalizerManager.state.collectAsState()
 
+    LaunchedEffect(analysisComplete) {
+        if (analysisComplete) {
+            snackbarHostState.showSnackbar("AI 분석 완료! 스마트 플레이리스트가 생성되었어요 ✦")
+            viewModel.onAnalysisCompleteShown()
+        }
+    }
+
+    LaunchedEffect(playbackState.currentTrack?.id) {
+        playbackState.currentTrack?.let {
+            viewModel.recordPlay(it.id)
+            viewModel.loadLyrics(it)
+        }
+    }
+
     LaunchedEffect(playbackState.error) {
         playbackState.error?.let { error ->
             snackbarHostState.showSnackbar(error.message)
@@ -145,7 +179,7 @@ fun Y2KApp(player: Y2KPlayer, equalizerManager: EqualizerManager) {
                 enter = slideInVertically { it },
                 exit = slideOutVertically { it },
             ) {
-                Column {
+                Column(modifier = Modifier.navigationBarsPadding()) {
                     if (hasTrack) {
                         MiniPlayer(
                             title = playbackState.currentTrack?.title ?: "",
@@ -180,7 +214,11 @@ fun Y2KApp(player: Y2KPlayer, equalizerManager: EqualizerManager) {
             }
         },
     ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding)) {
+        Box(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize(),
+        ) {
             NavDisplay(
                 backStack = backStack,
                 onBack = { backStack.removeLastOrNull() },
@@ -188,6 +226,8 @@ fun Y2KApp(player: Y2KPlayer, equalizerManager: EqualizerManager) {
                     entry<HomeRoute> {
                         HomeScreen(
                             tracks = tracks,
+                            smartPlaylists = smartPlaylists,
+                            analysisProgress = analysisProgress,
                             onTrackClick = { index ->
                                 player.setQueue(tracks, index)
                                 backStack.add(NowPlayingRoute)
@@ -199,6 +239,13 @@ fun Y2KApp(player: Y2KPlayer, equalizerManager: EqualizerManager) {
                                 player.setQueue(tracks)
                                 player.toggleShuffle()
                                 backStack.add(NowPlayingRoute)
+                            },
+                            onSmartPlaylistClick = { playlist ->
+                                player.setQueue(playlist.tracks)
+                                backStack.add(NowPlayingRoute)
+                            },
+                            onAiDjClick = {
+                                backStack.add(AiDjRoute)
                             },
                         )
                     }
@@ -214,6 +261,8 @@ fun Y2KApp(player: Y2KPlayer, equalizerManager: EqualizerManager) {
                     entry<LibraryRoute> {
                         LibraryScreen(
                             tracks = tracks,
+                            userPlaylists = userPlaylists,
+                            favoriteIds = favoriteIds,
                             onAlbumClick = { album ->
                                 backStack.add(TrackListRoute(album))
                             },
@@ -223,6 +272,28 @@ fun Y2KApp(player: Y2KPlayer, equalizerManager: EqualizerManager) {
                             },
                             onArtistClick = { artist ->
                                 backStack.add(ArtistDetailRoute(artist))
+                            },
+                            onCreatePlaylist = { name -> viewModel.createPlaylist(name) },
+                            onDeletePlaylist = { id -> viewModel.deletePlaylist(id) },
+                            onRenamePlaylist = { id, name -> viewModel.renamePlaylist(id, name) },
+                            recentTrackIds = recentTrackIds,
+                            onPlayRecent = {
+                                val recentTracks = recentTrackIds.mapNotNull { id -> tracks.find { it.id == id } }
+                                if (recentTracks.isNotEmpty()) {
+                                    player.setQueue(recentTracks)
+                                    backStack.add(NowPlayingRoute)
+                                }
+                            },
+                            onPlayFavorites = {
+                                val favTracks = tracks.filter { it.id in favoriteIds }
+                                if (favTracks.isNotEmpty()) {
+                                    player.setQueue(favTracks)
+                                    backStack.add(NowPlayingRoute)
+                                }
+                            },
+                            onPlaylistClick = { id ->
+                                val playlist = userPlaylists.firstOrNull { it.id == id } ?: return@LibraryScreen
+                                backStack.add(PlaylistDetailRoute(id, playlist.name))
                             },
                         )
                     }
@@ -242,6 +313,7 @@ fun Y2KApp(player: Y2KPlayer, equalizerManager: EqualizerManager) {
                     entry<NowPlayingRoute> {
                         NowPlayingScreen(
                             playbackState = playbackState,
+                            userPlaylists = userPlaylists,
                             onBack = { backStack.removeLastOrNull() },
                             onQueueClick = {
                                 val album = playbackState.currentTrack?.album ?: return@NowPlayingScreen
@@ -253,6 +325,16 @@ fun Y2KApp(player: Y2KPlayer, equalizerManager: EqualizerManager) {
                             onSeek = { player.seekTo(it) },
                             onToggleShuffle = { player.toggleShuffle() },
                             onCycleRepeatMode = { player.cycleRepeatMode() },
+                            onAddToPlaylist = { playlistId ->
+                                val trackId = playbackState.currentTrack?.id ?: return@NowPlayingScreen
+                                viewModel.addTrackToPlaylist(playlistId, trackId)
+                            },
+                            isFavorite = playbackState.currentTrack?.id in favoriteIds,
+                            onToggleFavorite = {
+                                val trackId = playbackState.currentTrack?.id ?: return@NowPlayingScreen
+                                viewModel.toggleFavorite(trackId)
+                            },
+                            lyrics = currentLyrics,
                         )
                     }
                     entry<ArtistDetailRoute> { route ->
@@ -284,6 +366,28 @@ fun Y2KApp(player: Y2KPlayer, equalizerManager: EqualizerManager) {
                             },
                         )
                     }
+                    entry<AiDjRoute> {
+                        val aiDjViewModel: AiDjViewModel = viewModel()
+                        AiDjScreen(
+                            viewModel = aiDjViewModel,
+                            tracks = tracks,
+                            onBack = { backStack.removeLastOrNull() },
+                            onPlayTracks = { trackList ->
+                                player.setQueue(trackList)
+                                backStack.add(NowPlayingRoute)
+                            },
+                            onTrackClick = { track ->
+                                val index = tracks.indexOf(track)
+                                if (index >= 0) {
+                                    player.setQueue(tracks, index)
+                                    backStack.add(NowPlayingRoute)
+                                }
+                            },
+                            onSaveAsPlaylist = { name, trackIds ->
+                                viewModel.createPlaylist(name, trackIds)
+                            },
+                        )
+                    }
                     entry<TrackListRoute> { route ->
                         val albumTracks = remember(tracks, route.album) {
                             tracks.filter { it.album == route.album }
@@ -304,6 +408,39 @@ fun Y2KApp(player: Y2KPlayer, equalizerManager: EqualizerManager) {
                                 player.setQueue(albumTracks)
                                 player.toggleShuffle()
                                 backStack.add(NowPlayingRoute)
+                            },
+                        )
+                    }
+                    entry<PlaylistDetailRoute> { route ->
+                        var playlistTracks by remember { mutableStateOf<List<Y2KTrack>>(emptyList()) }
+                        LaunchedEffect(route.playlistId, userPlaylists) {
+                            val trackIds = viewModel.getPlaylistTrackIds(route.playlistId)
+                            playlistTracks = trackIds.mapNotNull { id -> tracks.find { it.id == id } }
+                        }
+                        PlaylistDetailScreen(
+                            playlistName = route.playlistName,
+                            tracks = playlistTracks,
+                            playbackState = playbackState,
+                            onBack = { backStack.removeLastOrNull() },
+                            onTrackClick = { index ->
+                                player.setQueue(playlistTracks, index)
+                                backStack.add(NowPlayingRoute)
+                            },
+                            onPlayAll = {
+                                if (playlistTracks.isNotEmpty()) {
+                                    player.setQueue(playlistTracks)
+                                    backStack.add(NowPlayingRoute)
+                                }
+                            },
+                            onShuffle = {
+                                if (playlistTracks.isNotEmpty()) {
+                                    player.setQueue(playlistTracks)
+                                    player.toggleShuffle()
+                                    backStack.add(NowPlayingRoute)
+                                }
+                            },
+                            onRemoveTrack = { trackId ->
+                                viewModel.removeTrackFromPlaylist(route.playlistId, trackId)
                             },
                         )
                     }
